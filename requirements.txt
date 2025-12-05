@@ -1,0 +1,4 @@
+numpy==2.3.5
+pandas==2.3.3
+pandera==0.27.0
+pyarrow==20.0.0
