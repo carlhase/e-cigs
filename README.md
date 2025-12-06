@@ -18,4 +18,4 @@ The pipeline processes store-product-month files from approx. 35,000 stores and 
 - https://drive.google.com/file/d/1DcD6880gdh3eS6qZhdoi1LeL64maZkCi/view?usp=sharing
 
 ---
-*Note: If you are a prospective employer browsing this repo, the exclusion of raw data is deliberate. The focus here is on the **code** — which demonstrates skills in Python, Stata, and reproducible research workflows.*
+*Note: If you are a prospective employer browsing this repo, the exclusion of raw data is deliberate. The focus here is on the **code**.*
