@@ -172,14 +172,15 @@ def compute_unit_value_lags(subcat_df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def compute_revenue_weights(subcat_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def compute_revenue_weights(subcat_df: pd.DataFrame, period_col: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Compute category_annual_revenue, type_annual_revenue, and product_annual_revenue
     for subcategory 'Vaping Products'.
+    - period_col = "fiscal_year" or "calendar_year"
     """
     # (sub)category annual revenue
     category_revenue = (
-        subcat_df.groupby(["store_id", "subcategory", "fiscal_year"])
+        subcat_df.groupby(["store_id", "subcategory", period_col])
         .agg(category_annual_revenue=("total_revenue_amount", "sum"))
         .reset_index()
     )
@@ -187,7 +188,7 @@ def compute_revenue_weights(subcat_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.D
     # product type annual revenue
     type_revenue = (
         subcat_df.groupby(
-            ["store_id", "subcategory", "product_type", "fiscal_year"], dropna=False
+            ["store_id", "subcategory", "product_type", period_col], dropna=False
         )
         .agg(type_annual_revenue=("total_revenue_amount", "sum"))
         .reset_index()
@@ -196,7 +197,7 @@ def compute_revenue_weights(subcat_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.D
     # product annual revenue
     product_revenue = (
         subcat_df.groupby(
-            ["store_id", "subcategory", "product_type", "gtin", "fiscal_year"],
+            ["store_id", "subcategory", "product_type", "gtin", period_col],
             dropna=False,
         )
         .agg(product_annual_revenue=("total_revenue_amount", "sum"))
@@ -206,7 +207,8 @@ def compute_revenue_weights(subcat_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.D
     return category_revenue, type_revenue, product_revenue
 
 
-def compute_vape_price_index_for_store(subcat_df: pd.DataFrame) -> pd.DataFrame:
+def compute_vape_price_index_for_store(subcat_df: pd.DataFrame, weight_basis: str = "fiscal") -> pd.DataFrame: 
+    period_col = "fiscal_year" if weight_basis == "fiscal" else "calendar_year"
     """
     Compute the vape_price_index and its log for a single store's Vaping Products.
     Returns a DataFrame with columns: store_id, date, vape_price_index, l_vape_price_index
@@ -223,7 +225,7 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame) -> pd.DataFrame:
         product_revenue,
         type_revenue,
         how="left",
-        on=["store_id", "subcategory", "product_type", "fiscal_year"],
+        on=["store_id", "subcategory", "product_type", period_col],
     )
     stage_1_weight["stage_1_weight"] = (
         stage_1_weight["product_annual_revenue"] / stage_1_weight["type_annual_revenue"]
@@ -234,7 +236,7 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame) -> pd.DataFrame:
         subcat_df,
         stage_1_weight,
         how="left",
-        on=["store_id", "subcategory", "product_type", "gtin", "fiscal_year"],
+        on=["store_id", "subcategory", "product_type", "gtin", period_col],
     )
 
     # stage 1: unit value index
@@ -267,7 +269,7 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame) -> pd.DataFrame:
         type_revenue,
         category_revenue,
         how="left",
-        on=["store_id", "subcategory", "fiscal_year"],
+        on=["store_id", "subcategory", period_col],
     )
     stage_2_weight["stage_2_weight"] = (
         stage_2_weight["type_annual_revenue"]
@@ -275,7 +277,7 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # fiscal year lookup by date
-    fisc_year_date_df = stage_1_df[["date", "fiscal_year"]].drop_duplicates()
+    fisc_year_date_df = stage_1_df[["date", period_col]].drop_duplicates()
 
     # attach fiscal_year to each date in type_index
     type_index = pd.merge(
@@ -290,7 +292,7 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame) -> pd.DataFrame:
         type_index,
         stage_2_weight,
         how="left",
-        on=["store_id", "subcategory", "product_type", "fiscal_year"],
+        on=["store_id", "subcategory", "product_type", period_col],
     )
 
     # replace +/-inf caused by division-by-zero, or non-positive values -> nan
