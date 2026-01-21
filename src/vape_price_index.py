@@ -376,7 +376,7 @@ def process_store_file(store: str, store_path: str, outpath: str, fy_map: dict) 
 
     store_index = compute_vape_price_index_for_store(subcat_df)
 
-    # Validation check 2: validate the per-store vape index (no ±inf, correct dtypes, etc.)
+    # Validation check 2: validate the per-store vape index (no +/-inf, correct dtypes, etc.)
     store_index = validate_vape_index_df(store_index)
     
     output_filename = os.path.join(outpath, f"{store}.feather")

@@ -1,6 +1,6 @@
 # Partial replication package: Enforcement Spillovers in Product Markets: Evidence from E-cigarettes
 
-This repository contains a select portion of the replication package for the working paper **Enforcement Spillovers in Product Markets: Evidence from E-cigarettes**. The repository contains a modular, testable, and production-ready Python pipeline for constructing store-level e-cigarette price indexes from convenience-store scanner data.
+This repository contains a select portion of the replication package for my working paper **Enforcement Spillovers in Product Markets: Evidence from E-cigarettes**. The repository contains a modular, testable, and production-ready Python pipeline for constructing store-level e-cigarette price indexes from convenience-store scanner data.
 
 ## Highlights
 - Modular code in `src/`
@@ -17,5 +17,3 @@ The pipeline processes store-product-month files from approx. 35,000 stores and 
 ## Paper
 - https://drive.google.com/file/d/1DcD6880gdh3eS6qZhdoi1LeL64maZkCi/view?usp=sharing
 
----
-*Note: If you are a prospective employer browsing this repo, the exclusion of raw data is deliberate. The focus here is on the **code** — which demonstrates skills in Python, Stata, and reproducible research workflows.*
