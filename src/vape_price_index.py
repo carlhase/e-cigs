@@ -208,17 +208,21 @@ def compute_revenue_weights(subcat_df: pd.DataFrame, period_col: str) -> tuple[p
 
 
 def compute_vape_price_index_for_store(subcat_df: pd.DataFrame, weight_basis: str = "fiscal") -> pd.DataFrame: 
-    period_col = "fiscal_year" if weight_basis == "fiscal" else "calendar_year"
     """
     Compute the vape_price_index and its log for a single store's Vaping Products.
     Returns a DataFrame with columns: store_id, date, vape_price_index, l_vape_price_index
     (subcategory is dropped at the end).
     """
+    if weight_basis not in {"fiscal", "calendar"}:
+        raise ValueError("weight_basis must be 'fiscal' or 'calendar'")
+    
+    period_col = "fiscal_year" if weight_basis == "fiscal" else "calendar_year"
+    
     # compute lagged unit values & month_diff
     subcat_df = compute_unit_value_lags(subcat_df)
 
     # revenue weights
-    category_revenue, type_revenue, product_revenue = compute_revenue_weights(subcat_df)
+    category_revenue, type_revenue, product_revenue = compute_revenue_weights(subcat_df, period_col)
 
     # stage 1 weight: product share of type revenue
     stage_1_weight = pd.merge(
@@ -348,7 +352,13 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame, weight_basis: st
 # ---------------------------------------------------------------------
 
 
-def process_store_file(store: str, store_path: str, outpath: str, fy_map: dict) -> bool:
+def process_store_file(
+        store: str, 
+        store_path: str, 
+        outpath: str, 
+        fy_map: dict, 
+        weight_basis: str = "fiscal"
+        ) -> bool:
     """
     Process a single store:
       - read in feather file
@@ -374,7 +384,7 @@ def process_store_file(store: str, store_path: str, outpath: str, fy_map: dict) 
         print(f"Skipping {store} — empty Vaping Products subset")
         return False
 
-    store_index = compute_vape_price_index_for_store(subcat_df)
+    store_index = compute_vape_price_index_for_store(subcat_df, weight_basis=weight_basis)
 
     # Validation check 2: validate the per-store vape index (no +/-inf, correct dtypes, etc.)
     store_index = validate_vape_index_df(store_index)
@@ -386,7 +396,12 @@ def process_store_file(store: str, store_path: str, outpath: str, fy_map: dict) 
     return True
 
 
-def process_all_stores(store_path: str, outpath: str, limit: int | None = None) -> None:
+def process_all_stores(
+        store_path: str, 
+        outpath: str, 
+        weight_basis: str = "fiscal",
+        limit: int | None = None
+        ) -> None:
     """
     Loop over all store files, compute indexes and save per-store results.
     Added optional limit of store numbers for dry runs
@@ -408,7 +423,7 @@ def process_all_stores(store_path: str, outpath: str, limit: int | None = None) 
 
     start = timer()
     for store in store_numbers:
-        processed = process_store_file(store, store_path, outpath, fy_map)
+        processed = process_store_file(store, store_path, outpath, fy_map, weight_basis=weight_basis)
         iteration += 1
         status = "Processed" if processed else "Skipped"
         print(f"Iteration {iteration}/{total_iterations}: {status} store {store}")
@@ -428,6 +443,12 @@ def build_panel_index(source_dir: str, output_path: str) -> pd.DataFrame:
     pattern = os.path.join(source_dir, "*.feather")
     all_files = glob.glob(pattern)
     all_files = [os.path.normpath(p) for p in all_files]
+
+    if not all_files:
+        raise RuntimeError(
+            f"No store-level index files found in: {source_dir}. "
+            "Upstream processing produced zero outputs."
+            )
 
     total_iterations = len(all_files)
     print(f"Building panel from {total_iterations} store-level index files.")

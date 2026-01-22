@@ -39,6 +39,16 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--weight-basis",
+        choices=["fiscal", "calendar"],
+        default="fiscal",
+        help=(
+            "Revenue-weighting basis for annual weights. "
+            "'fiscal' uses fiscal_year; 'calendar' uses calendar_year."
+            ),
+    )
+
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -60,6 +70,7 @@ def main() -> None:
     process_all_stores(
         store_path=str(store_path),
         outpath=str(outpath),
+        weight_basis=args.weight_basis,
         limit=args.limit
     )
 
