@@ -143,15 +143,30 @@ def subset_vaping_products(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------
 
 
-def compute_unit_value_lags(subcat_df: pd.DataFrame) -> pd.DataFrame:
+def compute_unit_value_lags(
+        subcat_df: pd.DataFrame,
+        value_col: str,
+        out_value_col: str = "value",
+        out_lag_value_col: str = "lag_value",
+        ) -> pd.DataFrame:
     """
     Within each (store_id, gtin) group:
       - sort by date
       - compute month_diff (difference in months between consecutive rows)
-      - compute lag_unit_value_q (previous month's unit_value_q)
+      - compute lag of value_col
       - set non-consecutive lags to NaN
+
+    Parameters
+    ----------
+    value_col : str
+        Column to lag (e.g., "unit_value_q" for price index, "quantity" for qty index).
+    out_value_col / out_lag_col : str
+        Standardized column names used by the rest of the pipeline.
     """
     df = subcat_df.copy()
+
+    if value_col not in df.columns:
+        raise KeyError(f"Expected column '{value_col}' not found in DataFrame. Available: {list(df.columns)}")
 
     df = df.sort_values(by=["store_id", "gtin", "date"])
 
@@ -162,13 +177,17 @@ def compute_unit_value_lags(subcat_df: pd.DataFrame) -> pd.DataFrame:
         .apply(lambda x: x.n if pd.notna(x) else np.nan)
     )
 
+    # standardize the raw value column name
+    df[out_value_col] = df[value_col]
+
     # lagged unit_value_q
-    df["lag_unit_value_q"] = df.groupby(["store_id", "gtin"])["unit_value_q"].shift(1)
+    df[out_lag_value_col] = df.groupby(["store_id", "gtin"])[out_value_col].shift(1)
 
     # keep only lags for consecutive months
-    df["lag_unit_value_q"] = np.where(df["month_diff"] == 1, df["lag_unit_value_q"], np.nan)
+    df[out_lag_value_col] = np.where(df["month_diff"] == 1, df[out_lag_value_col], np.nan)
 
     df = df.fillna(value=np.nan)
+
     return df
 
 
@@ -207,19 +226,30 @@ def compute_revenue_weights(subcat_df: pd.DataFrame, period_col: str) -> tuple[p
     return category_revenue, type_revenue, product_revenue
 
 
-def compute_vape_price_index_for_store(subcat_df: pd.DataFrame, weight_basis: str = "fiscal") -> pd.DataFrame: 
+def compute_vape_price_index_for_store(
+        subcat_df: pd.DataFrame, 
+        weight_basis: str = "fiscal",
+        index_kind: str = "price",
+        ) -> pd.DataFrame: 
     """
-    Compute the vape_price_index and its log for a single store's Vaping Products.
-    Returns a DataFrame with columns: store_id, date, vape_price_index, l_vape_price_index
-    (subcategory is dropped at the end).
+    Compute store-level monthly index and its log for a single store's Vaping Products.
+    Returns a DataFrame with columns: store_id, date, AND (vape_price_index, l_vape_price_index) 
+    OR (vape_qty_index, l_vape_qty_index).subcategory is dropped at the end.
+
+    weight_basis: 'fiscal' or 'calendar'
+    index_kind: 'price' (unit_value_q) or 'qty' (quantity)
     """
     if weight_basis not in {"fiscal", "calendar"}:
         raise ValueError("weight_basis must be 'fiscal' or 'calendar'")
     
-    period_col = "fiscal_year" if weight_basis == "fiscal" else "calendar_year"
+    if index_kind not in {"price", "qty"}:
+        raise ValueError("index_kind must be 'price' or 'qty'")
     
+    period_col = "fiscal_year" if weight_basis == "fiscal" else "calendar_year"
+    value_col = "unit_value_q" if index_kind == "price" else "quantity"
+
     # compute lagged unit values & month_diff
-    subcat_df = compute_unit_value_lags(subcat_df)
+    subcat_df = compute_unit_value_lags(subcat_df, value_col=value_col)
 
     # revenue weights
     category_revenue, type_revenue, product_revenue = compute_revenue_weights(subcat_df, period_col)
@@ -245,7 +275,7 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame, weight_basis: st
 
     # stage 1: unit value index
     stage_1_df["unit_value_index"] = (
-        stage_1_df["unit_value_q"] / stage_1_df["lag_unit_value_q"]
+        stage_1_df["unit_value"] / stage_1_df["lag_unit_value"]
         ) ** stage_1_df["stage_1_weight"]
 
     # replace +/-inf caused by division-by-zero, or non-positive values -> nan
@@ -306,9 +336,6 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame, weight_basis: st
     )
     if bad_level.any():
         stage_2_df.loc[bad_level, "type_index"] = np.nan
-
-    # replace ±inf caused by division-by-zero or extreme ratios
-    # stage_2_df["type_index"].replace([np.inf, -np.inf], np.nan, inplace=True)
     
     # stage 2: weighted type index
     stage_2_df["weighted_type_index"] = stage_2_df["type_index"] ** stage_2_df[
@@ -331,14 +358,18 @@ def compute_vape_price_index_for_store(subcat_df: pd.DataFrame, weight_basis: st
     if bad_level.any():
         store_index.loc[bad_level, "vape_price_index"] = np.nan
     
+    # conditional for column naming
+    index_col = "vape_price_index" if index_kind == "price" else "vape_qty_index"
+    log_col = "l_" + index_col
+
     # log index, suppress divide-by-zero warnings
     with np.errstate(divide="ignore", invalid="ignore"):
-        store_index["l_vape_price_index"] = np.log(
-            store_index["vape_price_index"]
+        store_index[log_col] = np.log(
+            store_index[index_col]
         )
 
     # replace any remaining +/-inf in the log with nan
-    store_index["l_vape_price_index"].replace(
+    store_index[log_col].replace(
         [np.inf, -np.inf], np.nan, inplace=True
     )
     
@@ -357,7 +388,8 @@ def process_store_file(
         store_path: str, 
         outpath: str, 
         fy_map: dict, 
-        weight_basis: str = "fiscal"
+        weight_basis: str = "fiscal",
+        index_kind: str = "price",
         ) -> bool:
     """
     Process a single store:
@@ -384,7 +416,11 @@ def process_store_file(
         print(f"Skipping {store} — empty Vaping Products subset")
         return False
 
-    store_index = compute_vape_price_index_for_store(subcat_df, weight_basis=weight_basis)
+    store_index = compute_vape_price_index_for_store(
+        subcat_df, 
+        weight_basis=weight_basis, 
+        index_kind=index_kind
+        )
 
     # Validation check 2: validate the per-store vape index (no +/-inf, correct dtypes, etc.)
     store_index = validate_vape_index_df(store_index)
@@ -400,6 +436,7 @@ def process_all_stores(
         store_path: str, 
         outpath: str, 
         weight_basis: str = "fiscal",
+        index_kind: str = "price",
         limit: int | None = None
         ) -> None:
     """
@@ -423,7 +460,14 @@ def process_all_stores(
 
     start = timer()
     for store in store_numbers:
-        processed = process_store_file(store, store_path, outpath, fy_map, weight_basis=weight_basis)
+        processed = process_store_file(
+            store, 
+            store_path, 
+            outpath, 
+            fy_map, 
+            weight_basis=weight_basis, 
+            index_kind=index_kind
+            )
         iteration += 1
         status = "Processed" if processed else "Skipped"
         print(f"Iteration {iteration}/{total_iterations}: {status} store {store}")

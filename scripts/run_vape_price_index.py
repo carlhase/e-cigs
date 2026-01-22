@@ -49,6 +49,13 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--index-kind",
+        choices=["price", "qty"],
+        default="price",
+        help="Which index to construct: 'price' uses unit_value_q; 'qty' uses quantity.",
+    )
+
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -71,6 +78,7 @@ def main() -> None:
         store_path=str(store_path),
         outpath=str(outpath),
         weight_basis=args.weight_basis,
+        index_kind=args.index_kind,
         limit=args.limit
     )
 
