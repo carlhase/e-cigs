@@ -1,0 +1,17 @@
+# Ignore data files
+data/raw/*
+data/interim/*
+data/processed/*
+*.feather
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore virtual envs
+venv/
+.env/
+.venv/
+
+# Spyder-specific
+.spyproject/
