@@ -13,10 +13,13 @@ from src.vape_price_index import (
 
 
 def parse_args() -> argparse.Namespace:
+
+    # create a parser object (like a spec sheet for my program) defining what arguments my program can take
     parser = argparse.ArgumentParser(
         description="Run vape price index pipeline."
     )
 
+    # each call to `parser.add_argument(...)` adds one allowable parameter to the spec.
     parser.add_argument(
         "--store-path",
         type=str,
@@ -62,20 +65,27 @@ def parse_args() -> argparse.Namespace:
         help="Process only the first N stores (dry run)."
     )
 
+    # parse the command-line arguments according to the spec sheet (i.e. "turn the text into variables")
     return parser.parse_args()
 
 
 def main() -> None:
+    # parse command-line arguments (strings to variables)
     args = parse_args()
 
+    # path normalization (convert str to pathlib.path), required for mkdir below
     store_path = Path(args.store_path)
     outpath = Path(args.outpath)
 
     outpath.mkdir(parents=True, exist_ok=True)
 
-    # Process (possibly limited) number of stores
+    """
+    Process (possibly limited) number of stores
+    Note: This is where the CLI's first-class parameters become function arguments 
+    that control computation.
+    """
     process_all_stores(
-        store_path=str(store_path),
+        store_path=str(store_path), # convert Path back to str
         outpath=str(outpath),
         weight_basis=args.weight_basis,
         index_kind=args.index_kind,

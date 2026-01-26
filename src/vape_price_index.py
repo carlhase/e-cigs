@@ -275,7 +275,7 @@ def compute_vape_price_index_for_store(
 
     # stage 1: unit value index
     stage_1_df["unit_value_index"] = (
-        stage_1_df["unit_value"] / stage_1_df["lag_unit_value"]
+        stage_1_df["value"] / stage_1_df["lag_value"]
         ) ** stage_1_df["stage_1_weight"]
 
     # replace +/-inf caused by division-by-zero, or non-positive values -> nan

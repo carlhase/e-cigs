@@ -17,7 +17,7 @@ python -m scripts.run_vape_price_index ^
     --outpath data\processed\store_vape_qty_indexes_fiscal ^
     --panel-output-path data\processed\index_panels\vape_qty_indexes_fiscal.feather ^
     --weight-basis fiscal ^
-    --index_kind qty ^
+    --index-kind qty ^
     --limit 10
 
 pause
