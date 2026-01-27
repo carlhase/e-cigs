@@ -12,6 +12,7 @@ from src.vape_price_index import (
     )
 
 
+# define function to convert CLI arguments to structured object (argparse.Namespace)
 def parse_args() -> argparse.Namespace:
 
     # create a parser object (like a spec sheet for my program) defining what arguments my program can take
@@ -71,7 +72,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     # parse command-line arguments (strings to variables)
-    args = parse_args()
+    args = parse_args() # args is now an object with attributes (args.store_path, args.outpath, etc.)
 
     # path normalization (convert str to pathlib.path), required for mkdir below
     store_path = Path(args.store_path)
@@ -82,7 +83,7 @@ def main() -> None:
     """
     Process (possibly limited) number of stores
     Note: This is where the CLI's first-class parameters become function arguments 
-    that control computation.
+    that control computation. This is the "handoff" between the CLI and the python library.
     """
     process_all_stores(
         store_path=str(store_path), # convert Path back to str
