@@ -342,35 +342,35 @@ def compute_vape_price_index_for_store(
         "stage_2_weight"
     ]
 
+    # Choose output column names based on index_kind
+    index_col = "vape_price_index" if index_kind == "price" else "vape_qty_index"
+    log_col = f"l_{index_col}"
+
     # aggregate to store-level vape price index
     store_index = (
         stage_2_df.groupby(["store_id", "subcategory", "date"])
-        .agg(vape_price_index=("weighted_type_index", "prod"))
+        .agg(**{index_col: ("weighted_type_index", "prod")})
         .reset_index()
         .drop(columns="subcategory")
     )
 
     # clean the level index: any non-finite or non-positive values -> nan
     bad_level = (
-        ~np.isfinite(store_index["vape_price_index"])
-        | (store_index["vape_price_index"] <= 0)
+        ~np.isfinite(store_index[index_col])
+        | (store_index[index_col] <= 0)
     )
     if bad_level.any():
-        store_index.loc[bad_level, "vape_price_index"] = np.nan
-    
-    # conditional for column naming
-    index_col = "vape_price_index" if index_kind == "price" else "vape_qty_index"
-    log_col = "l_" + index_col
+        store_index.loc[bad_level, index_col] = np.nan
 
-    # log index, suppress divide-by-zero warnings
+    # log index, suppress divide-by-zero warnings (since we expect some and fix them below)
     with np.errstate(divide="ignore", invalid="ignore"):
         store_index[log_col] = np.log(
             store_index[index_col]
         )
 
     # replace any remaining +/-inf in the log with nan
-    store_index[log_col].replace(
-        [np.inf, -np.inf], np.nan, inplace=True
+    store_index[log_col] = store_index[log_col].replace(
+        [np.inf, -np.inf], np.nan
     )
     
     # store_index["l_vape_price_index"] = np.log(store_index["vape_price_index"])
