@@ -17,7 +17,7 @@ def test_price_and_quantity_indexes_differ():
     df = pd.DataFrame(
         {
             "store_id": ["1", "1", "1", "1"],
-            "gtin": ["A", "A", "A", "A"],
+            "gtin": ["A", "A", "A", "A"],               # gtin is str type
             "subcategory": ["Vaping Products"] * 4,
             "product_type": ["Pods"] * 4,
             "calendar_year": [2023, 2023, 2023, 2023],
