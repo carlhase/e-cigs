@@ -291,10 +291,9 @@ def compute_vape_price_index_for_store(
     
     # aggregate to product_type index
     type_index = (
-        stage_1_df.groupby(
-            ["store_id", "subcategory", "product_type", "date"], dropna=False
-        )
-        .agg(type_index=("unit_value_index", "prod"))
+        stage_1_df
+        .groupby(["store_id", "subcategory", "product_type", "date"], dropna=False)
+        .agg(type_index=("unit_value_index", lambda s: s.prod(min_count=1)))
         .reset_index()
     )
 
@@ -338,9 +337,7 @@ def compute_vape_price_index_for_store(
         stage_2_df.loc[bad_level, "type_index"] = np.nan
     
     # stage 2: weighted type index
-    stage_2_df["weighted_type_index"] = stage_2_df["type_index"] ** stage_2_df[
-        "stage_2_weight"
-    ]
+    stage_2_df["weighted_type_index"] = stage_2_df["type_index"] ** stage_2_df["stage_2_weight"]
 
     # Choose output column names based on index_kind
     index_col = "vape_price_index" if index_kind == "price" else "vape_qty_index"
@@ -348,8 +345,9 @@ def compute_vape_price_index_for_store(
 
     # aggregate to store-level vape price index
     store_index = (
-        stage_2_df.groupby(["store_id", "subcategory", "date"])
-        .agg(**{index_col: ("weighted_type_index", "prod")})
+        stage_2_df
+        .groupby(["store_id", "subcategory", "date"])
+        .agg(**{index_col: ("weighted_type_index", lambda s: s.prod(min_count=1))})
         .reset_index()
         .drop(columns="subcategory")
     )
