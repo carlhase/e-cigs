@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Reusable validation helpers to validate data
-
-Role:
-Small functions I can call in:
-
+Reusable validation helpers to validate data. These are small 
+functions I can call in:
     - tests / CI (for sample data)
     - my pipeline (for real data)
-
 """
 
 import pandas as pd

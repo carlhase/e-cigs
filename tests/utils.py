@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Provides a small DataFrame that mimics my real store data, 
+Provides a small DataFrame that mimics my raw store data, 
 so I can test the pipeline quickly.
 """
 
@@ -15,7 +15,7 @@ def make_tiny_test_df() -> pd.DataFrame:
     Just enough columns to drive the vape_price_index pipeline.
     """
     return pd.DataFrame({
-# core identifiers
+        # core identifiers
         "STORE_ID": [1001, 1001, 1001],
         "CALENDAR_YEAR": [2022, 2022, 2022],
         "CALENDAR_MONTH": [10, 11, 12],

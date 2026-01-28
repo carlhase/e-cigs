@@ -17,6 +17,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import pyarrow as pa
+
 from src.validation import validate_store_df, validate_vape_index_df
 
 # ---------------------------------------------------------------------
@@ -50,6 +51,7 @@ def build_fiscal_year_periods() -> dict:
         .astype("str")
         .tolist()
     )
+    # return a dictionary
     return {
         2022: bfy_2022,
         2023: bfy_2023,

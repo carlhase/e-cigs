@@ -7,7 +7,7 @@ Defines Pandera schemas that describe what my DataFrames should look like:
 
 - StoreSchema: for store-product level monthly data (after we lowercase column names)
 
-- VapeIndexSchema: for the store/date vape price index output
+- VapeIndexSchema: for the store-level vape index output
 
 """
 
@@ -65,7 +65,7 @@ class StoreSchema(pa_pd.DataFrameModel):
 
 class VapeIndexSchema(pa_pd.DataFrameModel):
     """
-    Schema for the store-month vape price index output.
+    Schema for the store-month vape index output.
     """
 
     store_id: Series[int]
@@ -76,11 +76,10 @@ class VapeIndexSchema(pa_pd.DataFrameModel):
     l_vape_price_index: Series[float] = pa.Field(nullable=True)
 
     class Config:
-        strict = True
+        strict = True # do not allow extra columns if they show up
         coerce = True
 
-    # ---- custom checks to forbid ±inf ----
-
+    # ---- custom checks to forbid +/-inf ----
     @pa.check("vape_price_index")
     def vape_index_no_infinity(cls, s: pd.Series) -> pd.Series:
         """vape_price_index must not be +inf or -inf."""
