@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 
-from src.validation import validate_store_df, validate_vape_index_df
+from src.validation import validate_store_df, validate_vape_price_index_df, validate_vape_qty_index_df
 
 # ---------------------------------------------------------------------
 # Fiscal year helpers
@@ -423,8 +423,12 @@ def process_store_file(
         )
 
     # Validation check 2: validate the per-store vape index (no +/-inf, correct dtypes, etc.)
-    store_index = validate_vape_index_df(store_index)
-    
+    # validation function applied is conditional on index type
+    if index_kind == "price":
+        store_index = validate_vape_price_index_df(store_index)
+    else:
+        store_index = validate_vape_qty_index_df(store_index)
+
     output_filename = os.path.join(outpath, f"{store}.feather")
     output_filename = os.path.normpath(output_filename)
     pa.feather.write_feather(store_index, output_filename)
@@ -479,7 +483,10 @@ def process_all_stores(
     print(f"Finished processing all stores in {end - start:.2f} seconds.")
 
 
-def build_panel_index(source_dir: str, output_path: str) -> pd.DataFrame:
+def build_panel_index(
+        source_dir: str, 
+        output_path: str,
+        index_kind: str = "price") -> pd.DataFrame:
     """
     Read all per-store index feather files, concatenate into a panel, drop duplicates,
     convert store_id to string (as in your original), and save to output_path.
@@ -508,7 +515,11 @@ def build_panel_index(source_dir: str, output_path: str) -> pd.DataFrame:
     indexes = indexes.drop_duplicates(subset=["store_id", "date"])
     
     # Validation check 3: validate final index panel (no ±inf, correct dtypes, etc.)
-    indexes = validate_vape_index_df(indexes)
+    # validation function applied is conditional on index type
+    if index_kind == "price":
+        indexes = validate_vape_price_index_df(indexes)
+    else:
+        indexes = validate_vape_qty_index_df(indexes)
 
     # save final panel
     indexes.to_feather(output_path)

@@ -92,7 +92,8 @@ def main() -> None:
     # build the panel
     build_panel_index(
         source_dir=str(outpath),
-        output_path=str(panel_output_path)
+        output_path=str(panel_output_path),
+        index_kind=args.index_kind
         )
 
 

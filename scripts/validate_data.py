@@ -11,7 +11,7 @@ In Spyder IDE, execute this in console:
 import os
 import pandas as pd
 
-from src.validation import validate_store_df, validate_vape_index_df
+from src.validation import validate_store_df, validate_vape_price_index_df
 
 # allow the script to work in spyder AND the terminal
 if "__file__" in globals():
@@ -37,7 +37,7 @@ def main() -> None:
     sample_index_path = os.path.join(BASE_DIR, "tests", "data", "sample_index.feather")
     if os.path.exists(sample_index_path):
         df_index = pd.read_feather(sample_index_path)
-        validate_vape_index_df(df_index)
+        validate_vape_price_index_df(df_index)
         print("Sample vape index data validated successfully.")
     else:
         print("No sample_index.feather found, skipping index validation.")

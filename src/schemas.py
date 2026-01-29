@@ -63,9 +63,9 @@ class StoreSchema(pa_pd.DataFrameModel):
         coerce = True   # auto-coerce types (e.g. numeric gtin -> str)
 
 
-class VapeIndexSchema(pa_pd.DataFrameModel):
+class VapePriceIndexSchema(pa_pd.DataFrameModel):
     """
-    Schema for the store-month vape index output.
+    Schema for the store-month vape price index output.
     """
 
     store_id: Series[int]
@@ -91,6 +91,32 @@ class VapeIndexSchema(pa_pd.DataFrameModel):
         return ~s.isin([np.inf, -np.inf])
 
 
+class VapeQtyIndexSchema(pa_pd.DataFrameModel):
+    """
+    Schema for the store-month vape quantity index output.
+    """
+
+    store_id: Series[int]
+    date: Series[pd.Timestamp]
+
+    # Allow NaNs but enforce non-negative values
+    vape_qty_index: Series[float] = pa.Field(ge=0, nullable=True)
+    l_vape_qty_index: Series[float] = pa.Field(nullable=True)
+
+    class Config:
+        strict = True # do not allow extra columns if they show up
+        coerce = True
+
+    # ---- custom checks to forbid +/-inf ----
+    @pa.check("vape_qty_index")
+    def vape_index_no_infinity(cls, s: pd.Series) -> pd.Series:
+        """vape_qty_index must not be +inf or -inf."""
+        return ~s.isin([np.inf, -np.inf])
+
+    @pa.check("l_vape_qty_index")
+    def log_vape_index_no_infinity(cls, s: pd.Series) -> pd.Series:
+        """l_vape_qty_index must not be +inf or -inf."""
+        return ~s.isin([np.inf, -np.inf])
 
 
 
