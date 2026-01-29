@@ -29,20 +29,6 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--outpath",
-        type=str,
-        required=True,
-        help="Directory where per-store vape index feather files will be written."
-    )
-
-    parser.add_argument(
-        "--panel-output-path",
-        type=str,
-        default=None,
-        help="Optional output feather for the panel index file."
-    )
-
-    parser.add_argument(
         "--weight-basis",
         choices=["fiscal", "calendar"],
         default="fiscal",
@@ -57,14 +43,14 @@ def parse_args() -> argparse.Namespace:
         choices=["price", "qty"],
         default="price",
         help="Which index to construct: 'price' uses unit_value_q; 'qty' uses quantity.",
-    )
+        )
 
     parser.add_argument(
         "--limit",
         type=int,
         default=None,
         help="Process only the first N stores (dry run)."
-    )
+        )
 
     # parse the command-line arguments according to the spec sheet (i.e. "turn the text into variables")
     return parser.parse_args()
@@ -74,12 +60,22 @@ def main() -> None:
     # parse command-line arguments (strings to variables)
     args = parse_args() # args is now an object with attributes (args.store_path, args.outpath, etc.)
 
+    # Project root = parent of scripts/ (robust no matter where you run from)
+    project_root = Path(__file__).resolve().parents[1]
+
+    outpath = project_root / "data" / "processed" / f"store_vape_{args.index_kind}_indexes_{args.weight_basis}"
+    
+    panel_output_path = project_root / "data" / "processed" / "index_panels" / f"vape_{args.index_kind}_indexes_{args.weight_basis}.feather"
+    
     # path normalization (convert str to pathlib.path), required for mkdir below
     store_path = Path(args.store_path)
-    outpath = Path(args.outpath)
+    outpath = Path(outpath)
+    panel_output_path = Path(panel_output_path)
 
+    # create folders if they dont already exist
     outpath.mkdir(parents=True, exist_ok=True)
-
+    panel_output_path.parent.mkdir(parents=True, exist_ok=True)
+    
     """
     Process (possibly limited) number of stores
     Note: This is where the CLI's first-class parameters become function arguments 
@@ -91,37 +87,16 @@ def main() -> None:
         weight_basis=args.weight_basis,
         index_kind=args.index_kind,
         limit=args.limit
-    )
+        )
 
-    # Optional: build the panel
-    if args.panel_output_path is not None:
-        panel_output_path = Path(args.panel_output_path)
-        panel_output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        build_panel_index(
-            source_dir=str(outpath),
-            output_path=str(panel_output_path)
+    # build the panel
+    build_panel_index(
+        source_dir=str(outpath),
+        output_path=str(panel_output_path)
         )
 
 
 if __name__ == "__main__":
     main()
 
-
-
-# rootdir = r"C:/Users/cahase/Documents/e_cigs_best_practices/"
-
-# def main() -> None:
-#     # Adjust these as needed
-#     store_path = rootdir + "data/interim/da_store_id_monthly_ag/"
-#     outpath = rootdir + "data/processed/store_vape_price_indexes/"
-#     panel_output_path = rootdir + "data/processed/index_panels/vape_price_indexes.feather"
-
-#     process_all_stores(store_path=str(store_path), outpath=str(outpath))
-#     build_panel_index(source_dir=str(outpath), output_path=str(panel_output_path))
-
-
-# if __name__ == "__main__":
-#     main()
-    
     
