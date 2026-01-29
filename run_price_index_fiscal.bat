@@ -20,8 +20,6 @@ set STORE_ROOT=D:\convenience_store\data\processed\LS_Otter
 REM Run
 python -m scripts.run_vape_price_index ^
     --store-path "%STORE_ROOT%\da_store_id_monthly_ag_feather" ^
-    --outpath data\processed\store_vape_price_indexes_fiscal ^
-    --panel-output-path data\processed\index_panels\vape_price_indexes_fiscal.feather ^
     --weight-basis fiscal
 
 pause
