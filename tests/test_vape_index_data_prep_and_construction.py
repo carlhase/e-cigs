@@ -21,7 +21,7 @@ from src.vape_price_index import (
     subset_vaping_products,
     compute_vape_price_index_for_store,
 )
-from src.validation import validate_store_df, validate_vape_index_df
+from src.validation import validate_store_df, validate_vape_price_index_df
 from tests.utils import make_tiny_test_df
 
 
@@ -48,10 +48,10 @@ def test_vape_price_index_pipeline():
     idx = compute_vape_price_index_for_store(subcat)
 
     # Validate structure
-    idx_valid = validate_vape_index_df(idx)
+    idx_valid = validate_vape_price_index_df(idx)
 
     assert not idx_valid.empty
-    assert "vape_price_index" in idx_valid.columns, "validate_vape_index_df() failed"
+    assert "vape_price_index" in idx_valid.columns, "validate_vape_price_index_df() failed"
     assert "l_vape_price_index" in idx_valid.columns, "l_vape_price_index must be one of the columns"
 
 
