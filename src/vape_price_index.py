@@ -4,7 +4,7 @@ Created on Fri Dec  5 09:06:56 2025
 
 @author: cahase
 
-This script defines the functions that are used to construct store-level monthly
+This module defines the functions that are used to construct store-level monthly
 price indexes
 """
 
