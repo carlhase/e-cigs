@@ -269,11 +269,11 @@ def apply_address_cleaning(
 #%% Fuzzy matching
 
 # function to calculate similarity score between two strings
-def similarity_score(s1, s2):
-    if pd.isna(s1) or pd.isna(s2):
+def similarity_score(col1, col2):
+    if pd.isna(col1) or pd.isna(col2):
         return np.nan
     # standardize case and strip whitespace
-    s1 = s1.lower().strip()
-    s2 = s2.lower().strip()
+    col1 = col1.lower().strip()
+    col2 = col2.lower().strip()
 
-    return fuzz.token_sort_ratio(s1, s2)
+    return fuzz.token_sort_ratio(col1, col2)
