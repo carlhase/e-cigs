@@ -6,7 +6,7 @@ Runner: build FDA warning letter panel, load PDI Technologies store info, and me
     data/raw/pdi/STORE_STATUS_NEW-0.csv
 - Outputs: 
     data/processed/warning_letters/warning_letters_panel.feather
-    store_letter_match_by_zip.xlsx
+    data/processed/warning_letters_matched.xlsx
 """
 
 # Imports and paths

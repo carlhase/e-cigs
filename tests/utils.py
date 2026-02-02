@@ -53,7 +53,7 @@ def make_tiny_test_df() -> pd.DataFrame:
 
         # unit values
         "Q_PLUS_QWD": [10.0, 11.0, 12.0],
-        "UNIT_VALUE_Q_PLUS_QWD": [3.0, 3.5, 3.8],
+        "UNIT_VALUE_Q_PLUS_QWD": [3.0, 3.5, np.nan],
         "UNIT_VALUE_Q": [5.0, 6.0, 6.5],
         })
 

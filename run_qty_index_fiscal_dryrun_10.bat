@@ -16,6 +16,6 @@ python -m scripts.run_vape_price_index ^
     --store-path "%STORE_ROOT%\da_store_id_monthly_ag_feather" ^
     --weight-basis fiscal ^
     --index-kind qty ^
-    --limit 10
+    --limit 10000
 
 pause

@@ -54,9 +54,9 @@ class StoreSchema(pa_pd.DataFrameModel):
     pack_size: Series[str] = pa.Field(nullable=True)
     product_description: Series[str] = pa.Field(nullable=True)
 
-    q_plus_qwd: Series[float]
-    unit_value_q_plus_qwd: Series[float]
-    unit_value_q: Series[float]
+    q_plus_qwd: Series[float] 
+    unit_value_q_plus_qwd: Series[float] = pa.Field(nullable=True)
+    unit_value_q: Series[float] = pa.Field(nullable=True)
 
     class Config:
         strict = False  # allow extra columns if they show up
