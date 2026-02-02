@@ -10,8 +10,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
+PROJECT_ROOT = Path(__file__).resolve().parents[1] # define project root as directors teo levels up from this script file
+if str(PROJECT_ROOT) not in sys.path: # 
     sys.path.insert(0, str(PROJECT_ROOT))
 
 PROJECT_ROOT
@@ -114,7 +114,7 @@ peek(merged_df_clean, "merged_df_clean")
 merged_df_clean[["address_pdi", "address_fda"]].head(10)
 
 # %%
-# Dev: similarity scoring (can be slow; start small if needed)
+# Dev: x
 # For dev: run on a subset first
 tmp = merged_df_clean.head(4000).copy()
 tmp["similarity_score"] = tmp.apply(
