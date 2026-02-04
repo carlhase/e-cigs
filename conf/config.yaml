@@ -1,0 +1,15 @@
+defaults:
+  - data: rivals
+  - features: rivals_default
+  - train: base
+  - preprocess: default
+  - model: rf
+  - search: rf_large
+  - _self_
+
+outdir: results/${data}_${model}
+run_shap: false
+save_model: true
+
+
+

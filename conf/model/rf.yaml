@@ -1,0 +1,8 @@
+name: random_forest
+
+params:
+  oob_score: true
+  n_jobs: -1
+  random_state: 42
+
+  # note: keep model params (above) separate from the hyperparameter search space

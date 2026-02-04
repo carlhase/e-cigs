@@ -1,0 +1,4 @@
+input_path: data/processed/rivals_for_classification_models.feather
+format: feather
+target_col: non_compliant
+

@@ -1,0 +1,14 @@
+numerical:
+  imputer:
+    strategy: most_frequent
+    fill_value: null
+  scaler:
+    kind: standard
+
+categorical:
+  imputer:
+    strategy: most_frequent
+    fill_value: null
+  onehot:
+    handle_unknown: ignore
+    sparse_output: false

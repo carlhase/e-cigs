@@ -1,0 +1,14 @@
+numerical:
+  imputer:
+    strategy: median    # median|mean|most_frequent|constant
+    fill_value: null
+  scaler:
+    kind: standard      # standard|none
+
+categorical:
+  imputer:
+    strategy: most_frequent
+    fill_value: null
+  onehot:
+    handle_unknown: ignore
+    sparse_output: false

@@ -1,0 +1,10 @@
+numerical:
+  imputer: null
+  scaler:
+    kind: none
+
+categorical:
+  imputer: null
+  onehot:
+    handle_unknown: ignore
+    sparse_output: false

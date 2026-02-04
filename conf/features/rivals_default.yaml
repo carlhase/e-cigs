@@ -1,0 +1,28 @@
+x_cols:
+  - chain_size
+  - multi_state_chain
+  - zip_insp
+  - zip_viols
+  - zip_viol_per_insp
+  - city
+  - division
+  - l_avg_wage_index
+  - l_home_price_index
+  - stores_in_zip
+  - three_zip
+  - ruca1
+  - store_monthly_rev_22
+  - otp_monthly_rev_22
+  - vape_monthly_rev_22
+  - vape_monthly_trans_22
+  - vape_monthly_qty_22
+  - vape_monthly_variety_22
+  - insp_per_100k
+  - pct_viol_flwup_insp_12_mo
+  - viol_per_100_insp
+  - avg_cmp_collected_vs_issued
+  - penalty_share_us_civil_cases_17
+
+force_categorical:
+  - division
+  - ruca1
