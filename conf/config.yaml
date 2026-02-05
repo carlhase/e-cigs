@@ -4,7 +4,7 @@ defaults:
   - train: base
   - preprocess: default
   - model: rf
-  - search: rf_large
+  - search: rf_randomized_large
   - _self_
 
 outdir: results/${data}_${model}
