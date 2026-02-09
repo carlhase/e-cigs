@@ -7,7 +7,7 @@ defaults:
   - search: rf_randomized_large
   - _self_
 
-outdir: results/${data}_${model}
+outdir: results/${data.name}_${model.name}
 run_shap: false
 save_model: true
 
