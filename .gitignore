@@ -16,5 +16,8 @@ venv/
 # Spyder-specific
 .spyproject/
 
-# ignore results
+# ML results
 results/*
+
+# Jupyter notebooks
+notebooks/

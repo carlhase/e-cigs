@@ -25,9 +25,13 @@ def main(cfg: DictConfig) -> None:
     outdir = project_root / str(cfg.outdir)
     results = run_training(cfg, df = df, outdir = outdir)
 
+
     print("Best CV AUC:", results["best_cv_score"])
     print("Best hyperparameters:", results["best_params"])
+    print(f"Optimal threshold (max F1): {results['threshold_best']:.3f}")
     print("Test ROC-AUC:", results["test_roc_auc"])
+    print("\nConfusion matrix:\n", results["eval_opt"]["confusion_matrix"])
+    print("\nClassification report:\n", results["eval_opt"]["classification_report"])
 
 if __name__ == "__main__":
     main()
