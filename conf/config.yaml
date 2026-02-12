@@ -1,13 +1,13 @@
 defaults:
   - data: rivals
-  - features: rivals_default
+  - features: no_city_no_zip_viols_no_zip_insp_no_three_zip
   - train: base
   - preprocess: default
   - model: rf
-  - search: rf_randomized_large
+  - search: rf_randomized_small
   - _self_
 
-outdir: results/${data.name}_${model.name}
+outdir: results/${data.name}_${search.name}_${features.name}
 run_shap: false
 save_model: true
 

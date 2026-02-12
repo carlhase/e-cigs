@@ -16,8 +16,9 @@ def make_xy(
         raise KeyError(f"Missing X columns in df: {sorted(missing)}")
     if y_col not in df.columns:
         raise KeyError(f"Missing target column '{y_col}' in df.")
-    
+        
     X = df[list(x_cols)].copy()
     y = df[y_col].copy()
 
     return X, y
+

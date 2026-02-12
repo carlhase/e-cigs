@@ -11,4 +11,4 @@ categorical:
     fill_value: null
   onehot:
     handle_unknown: ignore
-    sparse_output: false
+    sparse_output: true

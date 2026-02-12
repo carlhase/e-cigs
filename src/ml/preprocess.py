@@ -102,7 +102,7 @@ def _build_categorical_pipe(cfg_cat: Any) -> Pipeline | None:
             )
         ))
 
-    # encoder step
+    # encoder step (categorical -> dummy vars)
     encoder_cfg = cfg_cat["onehot"]
     if encoder_cfg is not None:
         steps.append((

@@ -5,11 +5,18 @@ from typing import Any
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
+import joblib
+import json
+from omegaconf import OmegaConf
 
 from src.ml.features import make_xy
 from src.ml.preprocess import split_num_cat_columns, build_preprocessor_from_cfg
 from src.ml.model import build_model_pipeline
 from src.ml.tuning import build_search
+from src.ml.metrics import optimal_threshold_by_f1, evaluate_at_threshold
+from src.ml.plots import plot_threshold_curves, feature_importances_df, plot_feature_importances
+from src.ml.shap_utils import compute_and_plot_shap
+
 
 def run_training(
         cfg: Any,
@@ -27,6 +34,9 @@ def run_training(
         Returns summary objects from running the ML pipeline
     """
     outdir.mkdir(parents=True, exist_ok=True)
+    
+    # log the config
+    (outdir / "config.yaml").write_text(OmegaConf.to_yaml(cfg))
 
     X, y = make_xy(
         df,
@@ -64,19 +74,71 @@ def run_training(
 
     best = search.best_estimator_ # object storing best hyperparameter set
 
-    # use my trained classifier to output predicted probabilities (not just class labels)
+    # Build configuration-specific filename (not necessary but makes future comparison easier)
+    run_tag = f"{cfg.data.name}_{cfg.search.name}_{cfg.features.name}"
+    
+    # save trained model
+    joblib.dump(best, outdir / f"{run_tag}.joblib")
+
+    # ------------------------------------------------------------------
+    # Evaluate on test set
+    # ------------------------------------------------------------------
+    # use my trained classifier to output predicted probabilities (not just class labels) and the optimal threshold
     y_prob = best.predict_proba(X_test)[:, 1]
+    thr = optimal_threshold_by_f1(y_test, y_prob)
+    eval_opt = evaluate_at_threshold(y_test, y_prob, thresh=thr.best_thresh)
 
-    # THE REST OF THE FUNCTIONS NEED TO BE DEFINED IN SRC/
+    # Save evaluation summary to file
+    training_and_eval_summary = {
+        "run_tag": run_tag,
+        "model_artifact": f"{run_tag}.joblib",
+        "best_params": search.best_params_,
+        "best_cv_score": float(search.best_score_),
+        "test_roc_auc": float(roc_auc_score(y_test, y_prob)),
+        "threshold_best": thr.best_thresh,  # already float
+        "threshold_best_f1": thr.best_f1,   # already float
+        "eval_opt": eval_opt,
+    }
+    (outdir / "training_and_eval_summary.json").write_text(json.dumps(training_and_eval_summary, indent=2))
 
+    # ------------------------------------------------------------------
+    # Plot: threshold curves
+    # ------------------------------------------------------------------
+    plot_threshold_curves(
+        thr.precision, thr.recall, thr.thresholds,
+        thr.best_thresh, thr.best_f1,
+        outpath=outdir / "classification_thresholds.png", # generic filename because the folder is configuration-specific
+    )
+    
+    # ------------------------------------------------------------------
+    # Plot: Feature importances
+    # ------------------------------------------------------------------
+    pre = best.named_steps["preprocess"]
+    model = best.named_steps["model"]
+    fi = feature_importances_df(pre, model)
+    fi.to_csv(outdir / "feature_importances.csv", index=False)
+    plot_feature_importances(fi, outdir / "feature_importances.png", top_k=15)
+
+    # ------------------------------------------------------------------
+    # Plot: SHAP
+    # ------------------------------------------------------------------
+    compute_and_plot_shap(
+        best, 
+        X_test, 
+        outpath=outdir / "shap_summary.png"
+        )
+
+    # return summary to print later on during run
+    return training_and_eval_summary
+    
     # store various objects to print later on during run
-    return {
+"""     return {
         "best_estimator": best,
         "best_params": search.best_params_,
         "best_cv_score": float(search.best_score_),
         "test_roc_auc": float(roc_auc_score(y_test, y_prob)),
-        #"threshold_best": thr.best_thresh,
-        #"threshold_best_f1": thr.best_f1,
-        #"eval_opt": eval_opt,
+        "threshold_best": thr.best_thresh,
+        "threshold_best_f1": thr.best_f1,
+        "eval_opt": eval_opt,
         }
-    
+ """    

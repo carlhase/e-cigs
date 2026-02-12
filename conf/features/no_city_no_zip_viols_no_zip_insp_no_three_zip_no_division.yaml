@@ -1,11 +1,9 @@
-name: default
+name: no_city_no_zip_viols_no_zip_insp_no_three_zip_no_division
 
 x_cols:
   - chain_size
   - stores_in_zip
-  - zip_insp
   - zip_insp_per_store
-  - zip_viols
   - zip_viol_per_insp
   - l_avg_wage_index
   - l_home_price_index
@@ -21,14 +19,8 @@ x_cols:
   - avg_cmp_collected_vs_issued
   - penalty_share_us_civil_cases_17
   - ruca1
-  - city
-  - division
   - multi_state_chain
-  - three_zip
 
 force_categorical:
   - ruca1
-  - city
-  - division
   - multi_state_chain
-  - three_zip

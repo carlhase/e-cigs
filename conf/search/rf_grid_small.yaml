@@ -1,3 +1,4 @@
+name: rf_grid_small
 method: grid
 cv: 5
 scoring: roc_auc

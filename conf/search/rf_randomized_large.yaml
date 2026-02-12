@@ -1,3 +1,4 @@
+name: rf_randomized_large
 method: randomized
 n_iter: 200
 cv: 5
@@ -13,3 +14,4 @@ param_distributions:
   model__min_samples_leaf: [1, 2, 4, 8]
   model__max_features: ["sqrt", "log2"]
   model__class_weight: [null, "balanced"]
+
