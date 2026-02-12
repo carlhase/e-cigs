@@ -21,3 +21,5 @@ results/*
 
 # Jupyter notebooks
 notebooks/
+
+outputs/
