@@ -15,3 +15,5 @@ venv/
 
 # Spyder-specific
 .spyproject/
+
+notebooks/
